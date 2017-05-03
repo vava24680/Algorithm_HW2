@@ -1,6 +1,6 @@
 
 // change this to your id
-static const char* student_id = "3345678" ;
+static const char* student_id = "0416005" ;
 
 
 // do not edit prototype
@@ -9,7 +9,7 @@ void Delete(int *, int);
 int Select(int *, int);
 int Rank(int *, int);
 
-// data structure : 
+// data structure :
 // tree is an array with enough space
 // tree[0] is the array size
 // bundle three attribute as a node data
@@ -26,34 +26,76 @@ int Rank(int *, int);
 //
 // if tree[8] is "-1" says that the place of 3 has nothing
 //
-// if tree[14] is "-1" says that the place of 5 is a node of NIL
+// if tree[14] is "0" says that the place of 5 is a node of NIL
 //
 // if tree[19] is "66" says that the place of 7 is key of 66
 
-
 //
-// do your homework here
+// if there is an ambiguous situation, choose the smaller ( left ) one
 //
 
-void Insert(int * tree, int key) {
+class node
+{
+	public:
+		node();
+		node(int key_value);//For Insertion new node;
+		node(int key_value, int color);
+		~node();
+	private:
+		node *left, *right, *parent;
+		int key_value;
+		int color;//zero(0) means black, one(1) means red.
+};
+node::node()
+{
+	this->key_value = -111;
+	this->color = 2;//Means not exist.
+}
+node::node(int key_value)
+{
+	this->key_value = key_value;
+	this->color = 1;//New inserted node's color is red;
+}
+node::node(int key_value, int color)
+{
+	this->key_value = key_value;
+	this->color = color;
+}
+node::~node()
+{}
+/*---------------------------------------------------------*/
+class RB_tree
+{
+public:
+	RB_tree();
+private:
+	node *nil;
+};
+
+RB_tree::RB_tree()
+{
+	nil = new node(-111,0);
+}
+
+void Insert(int * tree, int key)
+{
 
 }
 
 void Delete(int * tree, int key) {
-	//
-	// if there is ambiguous situation, choose the smaller or left one
-	//
 
 }
 
 int Select(int * tree, int i) {
-	// use Dynamic Order Statistics to tell me the i'th smallest element
-	int output_key;
-	return output_key;
+	// use Dynamic Order Statistics to return the i'th smallest element
+
+
+	return -1;
 }
 
 int Rank(int * tree, int x) {
-	// use Dynamic Order Statistics to tell me the rank of element x in the tree
-	int output_rank;
-	return output_rank;
+	// use Dynamic Order Statistics to return the rank of element x in the tree
+
+
+	return -1;
 }
