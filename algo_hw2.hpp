@@ -2,7 +2,8 @@
 // change this to your id
 static const char* student_id = "0416005" ;
 
-
+#define RED 1
+#define BLACK 0
 // do not edit prototype
 void Insert(int *, int);
 void Delete(int *, int);
@@ -50,6 +51,7 @@ class node
 		void modify_left(node* n_left);
 		void modify_right(node* n_right);
 		void modify_parent(node* n_parent);
+		void modify_color(int color);
 		~node();
 	private:
 		node *left, *right, *parent;
@@ -119,6 +121,10 @@ void node::modify_parent(node* n_parent)
 {
 	this->parent = n_parent;
 }
+void node::modify_color(int color)
+{
+	this->color = color;
+}
 node::~node()
 {}
 /*---------------------------------------------------------*/
@@ -128,8 +134,9 @@ public:
 	RB_tree();
 	void left_rotation(node* z);
 	void right_rotation(node* z);
-	void tree_insert(int data);
-	void tree_insert(int data, int color);
+	void node_insert(int data);
+	void node_insert(int data, int color);
+	void node_delete(int data);
 	void property_fixup(node* z);
 	bool empty_tree();
 private:
@@ -147,32 +154,25 @@ RB_tree::RB_tree()
 void RB_tree::left_rotation(node* z)
 {
 	node* temp_z_right = z->get_right();
-	//z->get_right() = temp_z_right->get_left();
 	z->modify_right(temp_z_right->get_left());
 	if(temp_z_right->get_left()!=this->nil)
 	{
-		//temp_z_right->get_left()->get_parent() = z;
 		(temp_z_right->get_left())->modify_parent(z);
 	}
-	//temp_z_right->get_parent() = z->get_parent();
 	temp_z_right->modify_parent(z->get_parent());
 	if(z->get_parent()==this->nil)
 	{
 		this->root = temp_z_right;
 	}
-	else if(z==(z->get_parent())->get_left())
+	else if(z==((z->get_parent())->get_left()))
 	{
-		//(z->get_parent())->get_left() = temp_z_right;
 		(z->get_parent())->modify_left(temp_z_right);
 	}
 	else
 	{
-		//z->get_parent()->get_right() = temp_z_right;
 		(z->get_parent())->modify_right(temp_z_right);
 	}
-	//temp_z_right->get_left() = z;
 	temp_z_right->modify_left(z);
-	//z->get_parent() = temp_z_right;
 	z->modify_parent(temp_z_right);
 }
 void RB_tree::right_rotation(node* z)
@@ -203,7 +203,7 @@ void RB_tree::right_rotation(node* z)
 	z->modify_parent(temp_z_left);
 }
 
-void RB_tree::tree_insert(int data)
+void RB_tree::node_insert(int data)
 {
 	node* parent_curnode = this->nil;
 	node* current_node = this->root;
@@ -236,7 +236,7 @@ void RB_tree::tree_insert(int data)
 	new_node->initialize_property(this->nil);
 	property_fixup(new_node);
 }
-void RB_tree::tree_insert(int color, int data)
+void RB_tree::node_insert(int color, int data)
 {
 	node* parent_curnode = this->nil;
 	node* current_node = this->root;
@@ -269,21 +269,79 @@ void RB_tree::tree_insert(int color, int data)
 	//new_node->initialize_property(this->nil);
 	//property_fixup(new_node);
 }
+void RB_tree::node_delete(int data)
+{
+	node* delete_node = this->root;
+	while(delete_node!=this->nil && delete_node->get_key_value()!=data)
+	{
+		if(delete_node->get_key_value()<data)
+		{
+			delete_node = delete_node->get_left();
+		}
+		else if(delete_node->get_key_value()>data)
+		{
+			delete_node = delete_node->get_right();
+		}
+	}
+	if(delete_node==this->nil)
+	{
+		//do nothing
+	}
+	else
+	{
+		
+	}
+}
 void RB_tree::property_fixup(node* z)
 {
-	node *grandparent = (z->get_parent())->get_parent();
-	while((z->get_parent())->get_color()==1)
+	node* cur_deal_node = z;
+	node* uncle_node=0;
+	node* grandparent=0;
+	while((cur_deal_node->get_parent())->get_color()==RED)
 	{
-		//parent is left child
-		if(z->get_parent()==grandparent->get_left())
-		{
-
+		grandparent = (cur_deal_node->get_parent())->get_parent();
+		if(cur_deal_node->get_parent()==grandparent->get_left())
+		{//parent is left child
+			uncle_node = grandparent->get_right();
+			if (uncle_node->get_color() == RED)
+			{
+				(cur_deal_node->get_parent())->modify_color(BLACK);
+				uncle_node->modify_color(BLACK);
+				grandparent->modify_color(RED);
+				cur_deal_node = grandparent;
+			}
+			else if(cur_deal_node = (cur_deal_node->get_parent())->get_right())
+			{//cur_deal_node is a right child which need to be left rotated on its parent
+				cur_deal_node = cur_deal_node->get_parent();
+				this->left_rotation(cur_deal_node);
+				grandparent = (cur_deal_node->get_parent())->get_parent();//Since the cur_deal_node has been modified.
+			}
+			(cur_deal_node->get_parent())->modify_color(BLACK);
+			grandparent->modify_color(RED);
+			this->right_rotation(cur_deal_node);
 		}
 		else//parent is right child
 		{
-
+			uncle_node = grandparent->get_left();
+			if(uncle_node->get_color() == RED)
+			{
+				(cur_deal_node->get_parent())->modify_color(BLACK);
+				uncle_node->modify_color(BLACK);
+				grandparent->modify_color(RED);
+				cur_deal_node = grandparent;
+			}
+			else if(cur_deal_node = (cur_deal_node->get_parent())->get_left())
+			{
+				cur_deal_node = cur_deal_node->get_parent();
+				this->right_rotation(cur_deal_node);
+				grandparent = (cur_deal_node->get_parent())->get_parent();//Since the cur_deal_node has been modified.
+			}
+			(cur_deal_node->get_parent())->modify_color(BLACK);
+			grandparent->modify_color(RED);
+			this->left_rotation(cur_deal_node);
 		}
 	}
+	this->root->modify_color(BLACK);
 }
 bool RB_tree::empty_tree()
 {
@@ -297,7 +355,7 @@ void Insert(int * tree, int key)
 	int node_size = (tree[0]-1)/3;
 	if (RBTree->empty_tree())
 	{
-		RBTree->tree_insert(0, key);
+		RBTree->node_insert(0, key);
 	}
 	else
 	{
@@ -307,20 +365,42 @@ void Insert(int * tree, int key)
 				continue;
 			else if(tree[3*i-1] == -1)
 				break;
-			RBTree->tree_insert(tree[3*i-2], tree[3*i-1]);
+			RBTree->node_insert(tree[3*i-2], tree[3*i-1]);
 		}
 	}
+	RBTree->node_insert(key);
 	/*------------------Write Back------------------------------------*/
+
 	/*int node_size = (tree[0]-1)/3;
 	for(int i=1;i<=node_size;i++)
 	{
-		RBTree->tree_insert(tree[3*i-2],tree[3*i-1]);
+		RBTree->node_insert(tree[3*i-2],tree[3*i-1]);
 	}
-	RBTree->tree_insert(key);*/
+	RBTree->node_insert(key);*/
 }
 
-void Delete(int * tree, int key) {
-
+void Delete(int * tree, int key)
+{
+	RB_tree* RBTree = 0;
+	RBTree = new RB_tree;
+	int node_size = (tree[0]-1)/3;
+	if (RBTree->empty_tree())
+	{
+		RBTree->node_insert(0, key);
+	}
+	else
+	{
+		for(int i = 1;i<=node_size;i++)
+		{
+			if(tree[3*i-1] == 0)
+				continue;
+			else if(tree[3*i-1] == -1)
+				break;
+			RBTree->node_insert(tree[3*i-2], tree[3*i-1]);
+		}
+	}
+	RBTree->node_delete(key);
+	/*------------------write back---------------------*/
 }
 
 int Select(int * tree, int i) {
