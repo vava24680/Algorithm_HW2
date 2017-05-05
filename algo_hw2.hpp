@@ -131,6 +131,7 @@ public:
 	void tree_insert(int data);
 	void tree_insert(int data, int color);
 	void property_fixup(node* z);
+	bool empty_tree();
 private:
 	node *nil;
 	node *root;
@@ -239,11 +240,11 @@ void RB_tree::tree_insert(int color, int data)
 {
 	node* parent_curnode = this->nil;
 	node* current_node = this->root;
-	node* new_node = new_node(data,color);
+	node* new_node = new node(data,color);
 	while(current_node!=this->nil)
 	{
 		parent_curnode = current_node;
-		if(z->get_key_value()<current_node->get_key_value())
+		if (new_node->get_key_value()<current_node->get_key_value())
 		{
 			current_node = current_node->get_left();
 		}
@@ -252,7 +253,7 @@ void RB_tree::tree_insert(int color, int data)
 			current_node = current_node->get_right();
 		}
 	}
-	new_node->modify_parent(parent_curnode)g;
+	new_node->modify_parent(parent_curnode);
 	if(parent_curnode==this->nil)
 	{
 		this->root = new_node;
@@ -270,19 +271,52 @@ void RB_tree::tree_insert(int color, int data)
 }
 void RB_tree::property_fixup(node* z)
 {
-	
+	node *grandparent = (z->get_parent())->get_parent();
+	while((z->get_parent())->get_color()==1)
+	{
+		//parent is left child
+		if(z->get_parent()==grandparent->get_left())
+		{
+
+		}
+		else//parent is right child
+		{
+
+		}
+	}
+}
+bool RB_tree::empty_tree()
+{
+	return (this->root==this->nil) ? true : false;
 }
 //tree[3n-2]:color,tree[3n-2]:key_value,tree[3n]:Dynamic Order Statistics
 void Insert(int * tree, int key)
 {
-	int node_size = (tree[0]-1)/3;
-	RB_tree* RBTree = NULL:
+	RB_tree* RBTree = 0;
 	RBTree = new RB_tree;
+	int node_size = (tree[0]-1)/3;
+	if (RBTree->empty_tree())
+	{
+		RBTree->tree_insert(0, key);
+	}
+	else
+	{
+		for(int i = 1;i<=node_size;i++)
+		{
+			if(tree[3*i-1] == 0)
+				continue;
+			else if(tree[3*i-1] == -1)
+				break;
+			RBTree->tree_insert(tree[3*i-2], tree[3*i-1]);
+		}
+	}
+	/*------------------Write Back------------------------------------*/
+	/*int node_size = (tree[0]-1)/3;
 	for(int i=1;i<=node_size;i++)
 	{
 		RBTree->tree_insert(tree[3*i-2],tree[3*i-1]);
 	}
-	RBTree->tree_insert(key);
+	RBTree->tree_insert(key);*/
 }
 
 void Delete(int * tree, int key) {
