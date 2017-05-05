@@ -186,20 +186,20 @@ void RB_tree::right_rotation(node* z)
 	}
 	//temp_z_left->parent = z->parent;
 	temp_z_left->modify_parent(z->get_parent());
-	if(z->parent==this->nil)
+	if(z->get_parent()==this->nil)
 	{
 		this->root = temp_z_left;
 	}
-	else if(z=z->parent->left)
+	else if(z=(z->get_parent())->get_left())
 	{
-		z->parent->left = temp_z_left;
+		(z->get_parent())->modify_left(temp_z_left);
 	}
 	else
 	{
-		z->parent->right = temp_z_left;
+		(z->get_parent())->modify_right(temp_z_left);
 	}
-	temp_z_left->right = z;
-	z->parent = temp_z_left;
+	temp_z_left->modify_right(z);
+	z->modify_parent(temp_z_left);
 }
 
 void RB_tree::tree_insert(int data)
@@ -210,32 +210,32 @@ void RB_tree::tree_insert(int data)
 	while(current_node!=this->nil)
 	{
 		parent_curnode = current_node;
-		if (new_node->key_value<current_node->key_value)
+		if (new_node->get_key_value()<current_node->get_key_value())
 		{
-			current_node = current_node->left;
+			current_node = current_node->get_left();
 		}
 		else
 		{
-			current_node = current_node->right;
+			current_node = current_node->get_right();
 		}
 	}
-	new_node->parent = parent_curnode;
+	new_node->modify_parent(parent_curnode);
 	if(parent_curnode==this->nil)
 	{
 		this->root = new_node;
 	}
-	else if(new_node->key_value<parent_curnode->key_value)
+	else if(new_node->get_key_value()<parent_curnode->get_key_value())
 	{
-		parent_curnode->left = new_node;
+		parent_curnode->modify_left(new_node);
 	}
 	else
 	{
-		parent_curnode->right = new_node;
+		parent_curnode->modify_right(new_node);
 	}
 	new_node->initialize_property(this->nil);
 	property_fixup(new_node);
 }
-void RB_tree::tree_insert(int data, int color)
+void RB_tree::tree_insert(int color, int data)
 {
 	node* parent_curnode = this->nil;
 	node* current_node = this->root;
@@ -243,30 +243,34 @@ void RB_tree::tree_insert(int data, int color)
 	while(current_node!=this->nil)
 	{
 		parent_curnode = current_node;
-		if(z->key_value<current_node->key_value)
+		if(z->get_key_value()<current_node->get_key_value())
 		{
-			current_node = current_node->left;
+			current_node = current_node->get_left();
 		}
 		else
 		{
-			current_node = current_node->right;
+			current_node = current_node->get_right();
 		}
 	}
-	new_node->parent = parent_curnode;
+	new_node->modify_parent(parent_curnode)g;
 	if(parent_curnode==this->nil)
 	{
 		this->root = new_node;
 	}
-	else if(new_node->key_value<parent_curnode->key_value)
+	else if(new_node->get_key_value()<parent_curnode->get_key_value())
 	{
-		parent_curnode->left = new_node;
+		parent_curnode->modify_left(new_node);
 	}
 	else
 	{
-		parent_curnode->right = new_node;
+		parent_curnode->modify_right(new_node);
 	}
-	new_node->initialize_property(this->nil);
-	property_fixup(new_node);
+	//new_node->initialize_property(this->nil);
+	//property_fixup(new_node);
+}
+void RB_tree::property_fixup(node* z)
+{
+	
 }
 //tree[3n-2]:color,tree[3n-2]:key_value,tree[3n]:Dynamic Order Statistics
 void Insert(int * tree, int key)
@@ -276,8 +280,9 @@ void Insert(int * tree, int key)
 	RBTree = new RB_tree;
 	for(int i=1;i<=node_size;i++)
 	{
-		RBTree->tree_insert(tree[3*i-1],tree[3*i-2]);
+		RBTree->tree_insert(tree[3*i-2],tree[3*i-1]);
 	}
+	RBTree->tree_insert(key);
 }
 
 void Delete(int * tree, int key) {
