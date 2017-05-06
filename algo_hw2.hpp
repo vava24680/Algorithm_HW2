@@ -1,4 +1,5 @@
-
+#include <iostream>
+#include <cstdlib>
 // change this to your id
 static const char* student_id = "0416005" ;
 
@@ -52,6 +53,7 @@ class node
 		void modify_right(node* n_right);
 		void modify_parent(node* n_parent);
 		void modify_color(int color);
+		void modify_key_value(int key_value);
 		~node();
 	private:
 		node *left, *right, *parent;
@@ -125,6 +127,10 @@ void node::modify_color(int color)
 {
 	this->color = color;
 }
+void node::modify_key_value(int key_value)
+{
+	this->key_value = key_value;
+}
 node::~node()
 {}
 /*---------------------------------------------------------*/
@@ -134,10 +140,12 @@ public:
 	RB_tree();
 	void left_rotation(node* z);
 	void right_rotation(node* z);
+	node* left_maximum(node* z);
 	void node_insert(int data);
 	void node_insert(int data, int color);
 	void node_delete(int data);
 	void property_fixup(node* z);
+	void deletion_fixup(node* z);
 	bool empty_tree();
 private:
 	node *nil;
@@ -178,20 +186,17 @@ void RB_tree::left_rotation(node* z)
 void RB_tree::right_rotation(node* z)
 {
 	node* temp_z_left = z->get_left();
-	//z->left = temp_z_left->right;
 	z->modify_left(temp_z_left->get_right());
 	if(temp_z_left->get_right()!=this->nil)
 	{
-		//temp_z_left->right->parent = z;
 		(temp_z_left->get_right())->modify_parent(z);
 	}
-	//temp_z_left->parent = z->parent;
 	temp_z_left->modify_parent(z->get_parent());
 	if(z->get_parent()==this->nil)
 	{
 		this->root = temp_z_left;
 	}
-	else if(z=(z->get_parent())->get_left())
+	else if(z==(z->get_parent())->get_left())
 	{
 		(z->get_parent())->modify_left(temp_z_left);
 	}
@@ -201,6 +206,14 @@ void RB_tree::right_rotation(node* z)
 	}
 	temp_z_left->modify_right(z);
 	z->modify_parent(temp_z_left);
+}
+node* RB_tree::left_maximum(node* z)
+{
+	while(z->get_right()!=this->nil)
+	{
+		z = z->get_right();
+	}
+	return z;
 }
 
 void RB_tree::node_insert(int data)
@@ -257,6 +270,7 @@ void RB_tree::node_insert(int color, int data)
 	if(parent_curnode==this->nil)
 	{
 		this->root = new_node;
+		this->root->modify_parent(this->nil);
 	}
 	else if(new_node->get_key_value()<parent_curnode->get_key_value())
 	{
@@ -271,6 +285,8 @@ void RB_tree::node_insert(int color, int data)
 }
 void RB_tree::node_delete(int data)
 {
+	node* real_deleted_node=0;
+	node* child_of_RDN=0;
 	node* delete_node = this->root;
 	while(delete_node!=this->nil && delete_node->get_key_value()!=data)
 	{
@@ -285,11 +301,49 @@ void RB_tree::node_delete(int data)
 	}
 	if(delete_node==this->nil)
 	{
-		//do nothing
+		return;
+	}
+	if (delete_node->get_left() == NULL || delete_node->get_right() == NULL)
+	{
+		real_deleted_node = delete_node;
+	}
+	else
+	{//Eliminate the delete_node has two children situation
+		real_deleted_node = this->left_maximum(delete_node->get_left());
+	}
+	if(real_deleted_node->get_left()!=this->nil)
+	{
+		child_of_RDN = real_deleted_node->get_left();
 	}
 	else
 	{
-		
+		child_of_RDN = real_deleted_node->get_right();
+	}
+	child_of_RDN->modify_parent(real_deleted_node->get_parent());
+
+	if(real_deleted_node->get_parent()==this->nil)
+	{
+		this->root=child_of_RDN;
+		child_of_RDN->modify_parent(this->nil);
+	}
+	else if(real_deleted_node==(real_deleted_node->get_parent())->get_left())
+	{
+		(real_deleted_node->get_parent())->modify_left(child_of_RDN);
+	}
+	else
+	{
+		(real_deleted_node->get_parent())->modify_right(child_of_RDN);
+	}
+
+	if(real_deleted_node!=delete_node)
+	{
+		delete_node->modify_color(real_deleted_node->get_color());
+		//delete_node->modify_key_value(real_deleted_node->get_key_value());
+	}
+	delete real_deleted_node;
+	if(real_deleted_node->get_color()==BLACK)
+	{
+		deletion_fixup(child_of_RDN);
 	}
 }
 void RB_tree::property_fixup(node* z)
@@ -342,6 +396,73 @@ void RB_tree::property_fixup(node* z)
 		}
 	}
 	this->root->modify_color(BLACK);
+}
+void RB_tree::deletion_fixup(node* z)
+{
+	node* cur_deal_node = z;
+	node* sibling_node=0;
+	while(cur_deal_node!=this->root && cur_deal_node->get_color()==BLACK)
+	{
+		if(cur_deal_node==(cur_deal_node->get_parent())->get_left())
+		{//cur_deal_node is left node
+			sibling_node = (cur_deal_node->get_parent())->get_right();
+			if(sibling_node->get_color()==RED)
+			{
+				sibling_node->modify_color(BLACK);
+				(cur_deal_node->get_parent())->modify_color(RED);
+				this->left_rotation((cur_deal_node->get_parent()));
+			}
+			else
+			{
+				if((sibling_node->get_left())->get_color()==BLACK && (sibling_node->get_right())->get_color()==BLACK)
+				{
+					sibling_node->modify_color(RED);
+					cur_deal_node = cur_deal_node->get_parent();
+				}
+				else if((sibling_node->get_right())->get_color()==BLACK)
+				{
+					sibling_node->modify_color(RED);
+					(sibling_node->get_left())->modify_color(BLACK);
+					this->right_rotation(sibling_node);
+					sibling_node = (cur_deal_node->get_parent())->get_right();
+				}
+			}
+			(sibling_node->get_right())->modify_color(BLACK);
+			sibling_node->modify_color((cur_deal_node->get_parent())->get_color());
+			(cur_deal_node->get_parent())->modify_color(BLACK);
+			this->left_rotation((cur_deal_node->get_parent()));
+			cur_deal_node = this->root;
+		}
+		else
+		{//cur_deal_node is right node
+			sibling_node = (cur_deal_node->get_parent())->get_left();
+			if((sibling_node->get_color())==RED)
+			{
+				sibling_node->modify_color(BLACK);
+				(cur_deal_node->get_parent())->modify_color(RED);
+				this->right_rotation((cur_deal_node->get_parent()));
+			}
+			else
+			{
+				if((sibling_node->get_left())->get_color()==BLACK && (sibling_node->get_right())->get_color()==BLACK)
+				{
+
+				}
+				else if((sibling_node->get_right())->get_color()==BLACK)
+				{
+
+				}
+				/*
+				else
+				{
+
+				}
+				*/
+			}
+			cur_deal_node = this->root;
+		}
+	}
+	z->modify_color(BLACK);//Restore property 4(two consecutive red are not allowed)
 }
 bool RB_tree::empty_tree()
 {
