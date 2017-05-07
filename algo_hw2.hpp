@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdlib>
+#include <cstring>
 // change this to your id
 static const char* student_id = "0416005" ;
 
@@ -40,50 +41,57 @@ class node
 {
 	public:
 		node();
-		node(int key_value);//For Insertion new node;
-		node(int key_value, int color);
+		node(int key_value, int size);//For Insertion new node;
+		node(int key_value, int color, int size);
 		node(int key_value, int color, bool nil_node);
 		void initialize_property(node* nil);
 		node* get_left(void) const;
 		node* get_right(void) const;
 		node* get_parent(void) const;
-		int get_key_value(void) const;
 		int get_color(void) const;
+		int get_key_value(void) const;
+		int get_size(void) const;
 		void modify_left(node* n_left);
 		void modify_right(node* n_right);
 		void modify_parent(node* n_parent);
 		void modify_color(int color);
 		void modify_key_value(int key_value);
+		void modify_size(int size);
 		~node();
 	private:
 		node *left, *right, *parent;
 		int key_value;
 		bool nil_node;
 		int color;//zero(0) means black, one(1) means red.
+		int size;
 };
 node::node()
 {
 	this->key_value = -111;
 	this->color = 2;//Means not exist.
 	this->nil_node = 0;
+	this->size = 0;
 }
-node::node(int key_value)
+node::node(int key_value, int size)
 {
 	this->key_value = key_value;
 	this->color = 1;//New inserted node's color is red;
 	this->nil_node = 0;
+	this->size = size;
 }
-node::node(int key_value, int color)
+node::node(int key_value, int color, int size)
 {
 	this->key_value = key_value;
 	this->color = color;
 	this->nil_node = 0;
+	this->size = size;
 }
 node::node(int key_value, int color, bool nil_node)
 {
 	this->key_value = key_value;
 	this->color = color;
 	this->nil_node = nil_node;
+	this->size = 0;
 }
 void node::initialize_property(node* nil)
 {
@@ -103,13 +111,17 @@ node* node::get_parent(void) const
 {
 	return this->parent;
 }
+int node::get_color(void) const
+{
+	return this->color;
+}
 int node::get_key_value(void) const
 {
 	return this->key_value;
 }
-int node::get_color(void) const
+int node::get_size(void) const
 {
-	return this->color;
+	return this->size;
 }
 void node::modify_left(node* n_left)
 {
@@ -131,6 +143,10 @@ void node::modify_key_value(int key_value)
 {
 	this->key_value = key_value;
 }
+void node::modify_size(int size)
+{
+	this->size = size;
+}
 node::~node()
 {}
 /*---------------------------------------------------------*/
@@ -138,14 +154,16 @@ class RB_tree
 {
 public:
 	RB_tree();
+	node* get_root(void) const;
 	void left_rotation(node* z);
 	void right_rotation(node* z);
 	node* left_maximum(node* z);
-	void node_insert(int data);
-	void node_insert(int data, int color);
+	void node_insert(int data, int size);
+	void node_insert(int data, int color, int size);
 	void node_delete(int data);
 	void property_fixup(node* z);
 	void deletion_fixup(node* z);
+	void inorder_travel(int start_index, int* tree,const node* cur_deal_node);
 	bool empty_tree();
 private:
 	node *nil;
@@ -154,11 +172,15 @@ private:
 
 RB_tree::RB_tree()
 {
-	nil = new node(-111,0,1);
+	nil = new node(-111,0,true);
 	//root = nil;
 	root = nil;
 }
 
+node* RB_tree::get_root(void) const
+{
+	return this->root;
+}
 void RB_tree::left_rotation(node* z)
 {
 	node* temp_z_right = z->get_right();
@@ -216,11 +238,11 @@ node* RB_tree::left_maximum(node* z)
 	return z;
 }
 
-void RB_tree::node_insert(int data)
-{
+void RB_tree::node_insert(int data,int size)
+{//For newly inserted node in a RBtree
 	node* parent_curnode = this->nil;
 	node* current_node = this->root;
-	node* new_node = new node(data);
+	node* new_node = new node(data,size);
 	while(current_node!=this->nil)
 	{
 		parent_curnode = current_node;
@@ -232,6 +254,7 @@ void RB_tree::node_insert(int data)
 		{
 			current_node = current_node->get_right();
 		}
+		parent_curnode->modify_size(parent_curnode->get_size()+1);
 	}
 	new_node->modify_parent(parent_curnode);
 	if(parent_curnode==this->nil)
@@ -249,11 +272,11 @@ void RB_tree::node_insert(int data)
 	new_node->initialize_property(this->nil);
 	property_fixup(new_node);
 }
-void RB_tree::node_insert(int color, int data)
+void RB_tree::node_insert(int color, int data, int size)
 {
 	node* parent_curnode = this->nil;
 	node* current_node = this->root;
-	node* new_node = new node(data,color);
+	node* new_node = new node(data,color,size);
 	while(current_node!=this->nil)
 	{
 		parent_curnode = current_node;
@@ -265,6 +288,7 @@ void RB_tree::node_insert(int color, int data)
 		{
 			current_node = current_node->get_right();
 		}
+		parent_curnode->modify_size(parent_curnode->get_size()+1);
 	}
 	new_node->modify_parent(parent_curnode);
 	if(parent_curnode==this->nil)
@@ -280,6 +304,8 @@ void RB_tree::node_insert(int color, int data)
 	{
 		parent_curnode->modify_right(new_node);
 	}
+	new_node->modify_left(this->nil);
+	new_node->modify_right(this->nil);
 	//new_node->initialize_property(this->nil);
 	//property_fixup(new_node);
 }
@@ -364,7 +390,7 @@ void RB_tree::property_fixup(node* z)
 				grandparent->modify_color(RED);
 				cur_deal_node = grandparent;
 			}
-			else if(cur_deal_node = (cur_deal_node->get_parent())->get_right())
+			else if(cur_deal_node == (cur_deal_node->get_parent())->get_right())
 			{//cur_deal_node is a right child which need to be left rotated on its parent
 				cur_deal_node = cur_deal_node->get_parent();
 				this->left_rotation(cur_deal_node);
@@ -372,7 +398,7 @@ void RB_tree::property_fixup(node* z)
 			}
 			(cur_deal_node->get_parent())->modify_color(BLACK);
 			grandparent->modify_color(RED);
-			this->right_rotation(cur_deal_node);
+			this->right_rotation(grandparent);
 		}
 		else//parent is right child
 		{
@@ -384,7 +410,7 @@ void RB_tree::property_fixup(node* z)
 				grandparent->modify_color(RED);
 				cur_deal_node = grandparent;
 			}
-			else if(cur_deal_node = (cur_deal_node->get_parent())->get_left())
+			else if(cur_deal_node == (cur_deal_node->get_parent())->get_left())
 			{
 				cur_deal_node = cur_deal_node->get_parent();
 				this->right_rotation(cur_deal_node);
@@ -392,7 +418,7 @@ void RB_tree::property_fixup(node* z)
 			}
 			(cur_deal_node->get_parent())->modify_color(BLACK);
 			grandparent->modify_color(RED);
-			this->left_rotation(cur_deal_node);
+			this->left_rotation(grandparent);
 		}
 	}
 	this->root->modify_color(BLACK);
@@ -411,10 +437,11 @@ void RB_tree::deletion_fixup(node* z)
 				sibling_node->modify_color(BLACK);
 				(cur_deal_node->get_parent())->modify_color(RED);
 				this->left_rotation((cur_deal_node->get_parent()));
+				sibling_node=(cur_deal_node->get_parent())->get_right();
 			}
 			else
 			{
-				if((sibling_node->get_left())->get_color()==BLACK && (sibling_node->get_right())->get_color()==BLACK)
+				if((sibling_node->get_left())->get_color()==BLACK && (sibling_node->get_right()->get_color()==BLACK))
 				{
 					sibling_node->modify_color(RED);
 					cur_deal_node = cur_deal_node->get_parent();
@@ -441,42 +468,63 @@ void RB_tree::deletion_fixup(node* z)
 				sibling_node->modify_color(BLACK);
 				(cur_deal_node->get_parent())->modify_color(RED);
 				this->right_rotation((cur_deal_node->get_parent()));
+				sibling_node = (cur_deal_node->get_parent())->get_left();
 			}
 			else
 			{
 				if((sibling_node->get_left())->get_color()==BLACK && (sibling_node->get_right())->get_color()==BLACK)
 				{
-
+					sibling_node->modify_color(RED);
+					cur_deal_node = cur_deal_node->get_parent();
 				}
-				else if((sibling_node->get_right())->get_color()==BLACK)
+				else if((sibling_node->get_left())->get_color()==BLACK)
 				{
-
+					sibling_node->modify_color(RED);
+					(sibling_node->get_right())->modify_color(BLACK);
+					this->left_rotation(sibling_node);
+					sibling_node = (cur_deal_node->get_parent())->get_left();
 				}
-				/*
-				else
-				{
-
-				}
-				*/
 			}
+			(sibling_node->get_left())->modify_color(BLACK);
+			sibling_node->modify_color((cur_deal_node->get_parent())->get_color());
+			(cur_deal_node->get_parent())->modify_color(BLACK);
+			this->right_rotation((cur_deal_node->get_parent()));
 			cur_deal_node = this->root;
 		}
 	}
-	z->modify_color(BLACK);//Restore property 4(two consecutive red are not allowed)
+	cur_deal_node->modify_color(BLACK);//Restore property 4(two consecutive red are not allowed)
 }
 bool RB_tree::empty_tree()
 {
 	return (this->root==this->nil) ? true : false;
 }
 //tree[3n-2]:color,tree[3n-2]:key_value,tree[3n]:Dynamic Order Statistics
+void RB_tree::inorder_travel(int start_index, int* tree,const node* cur_deal_node)
+{//First time calling this function, cur_deal_node will be the root;
+	if(cur_deal_node == this->nil)
+	{
+		tree[3*start_index-2] = 0;
+		tree[3*start_index-1] = 0;
+		tree[3*start_index] = 0;
+		return;
+	}
+	tree[3*start_index-2] = cur_deal_node->get_color();
+	tree[3*start_index-1] = cur_deal_node->get_key_value();
+	tree[3*start_index] = cur_deal_node->get_size();
+	inorder_travel(start_index*2, tree, (cur_deal_node)->get_left());
+	inorder_travel(start_index*2+1, tree, (cur_deal_node)->get_right());
+	return;
+}
+//tree[3n-2]:color,tree[3n-2]:key_value,tree[3n]:Dynamic Order Statistics
 void Insert(int * tree, int key)
 {
+	int arr_size = tree[0];
 	RB_tree* RBTree = 0;
 	RBTree = new RB_tree;
 	int node_size = (tree[0]-1)/3;
-	if (RBTree->empty_tree())
+	if (RBTree->empty_tree() && tree[1]==-1)
 	{
-		RBTree->node_insert(0, key);
+		RBTree->node_insert(0, key,1);
 	}
 	else
 	{
@@ -486,12 +534,14 @@ void Insert(int * tree, int key)
 				continue;
 			else if(tree[3*i-1] == -1)
 				break;
-			RBTree->node_insert(tree[3*i-2], tree[3*i-1]);
+			RBTree->node_insert(tree[3*i-2], tree[3*i-1], tree[3*i]);
 		}
+		RBTree->node_insert(key,1);
 	}
-	RBTree->node_insert(key);
 	/*------------------Write Back------------------------------------*/
-
+	memset(tree, -1, arr_size);
+	tree[0] = arr_size;
+	RBTree->inorder_travel(1, tree, RBTree->get_root());
 	/*int node_size = (tree[0]-1)/3;
 	for(int i=1;i<=node_size;i++)
 	{
@@ -502,6 +552,7 @@ void Insert(int * tree, int key)
 
 void Delete(int * tree, int key)
 {
+	int arr_size = tree[0];
 	RB_tree* RBTree = 0;
 	RBTree = new RB_tree;
 	int node_size = (tree[0]-1)/3;
@@ -521,7 +572,10 @@ void Delete(int * tree, int key)
 		}
 	}
 	RBTree->node_delete(key);
+	memset(tree, -1, arr_size);
+	tree[0] = arr_size;
 	/*------------------write back---------------------*/
+	RBTree->inorder_travel(1, tree, (RBTree->get_root()));
 }
 
 int Select(int * tree, int i) {
