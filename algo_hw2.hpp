@@ -157,13 +157,15 @@ public:
 	node* get_root(void) const;
 	void left_rotation(node* z);
 	void right_rotation(node* z);
-	node* left_maximum(node* z);
-	void node_insert(int data);
+	node* search(const int key_value) const;
+	node* left_maximum(node* z) const;
+	void node_insert(int data) ;
 	void node_insert(int data, int color);
 	void node_delete(int data);
 	void property_fixup(node* z);
 	void deletion_fixup(node* z);
 	void inorder_travel(int start_index, int* tree,const node* cur_deal_node);
+	int compute_rank(int seek_value);
 	bool empty_tree();
 private:
 	node *nil;
@@ -275,7 +277,25 @@ void RB_tree::right_rotation(node* z)
 	temp_z_left->modify_right(z);
 	z->modify_parent(temp_z_left);
 }
-node* RB_tree::left_maximum(node* z)
+node* RB_tree::search(const int key_value) const
+{
+	node* parent_curnode = this->nil;
+	node* current_node = this->root;
+	while(current_node!=this->nil && key_value!=current_node->get_key_value())
+	{
+		parent_curnode = current_node;
+		if(key_value<current_node->get_key_value())
+		{
+			current_node = current_node->get_left();
+		}
+		else
+		{
+			current_node = current_node->get_right();
+		}
+	}
+	return current_node;
+}
+node* RB_tree::left_maximum(node* z) const
 {
 	while(z->get_right()!=this->nil)
 	{
@@ -352,8 +372,8 @@ void RB_tree::node_insert(int color, int data)
 	}
 	new_node->modify_left(this->nil);
 	new_node->modify_right(this->nil);
-	//new_node->initialize_property(this->nil);
-	//property_fixup(new_node);
+	new_node->initialize_property(this->nil);
+	property_fixup(new_node);
 }
 void RB_tree::node_delete(int data)
 {
@@ -581,6 +601,30 @@ void RB_tree::inorder_travel(int start_index, int* tree,const node* cur_deal_nod
 	inorder_travel(start_index*2+1, tree, (cur_deal_node)->get_right());
 	return;
 }
+int RB_tree::compute_rank(int seek_value)
+{
+	node* cur_node = this->root;
+	int rank = 0;
+	if(cur_node == this->nil)
+		return rank;
+	while(cur_node!=this->nil)
+	{
+		if(seek_value == cur_node->get_key_value())
+		{
+			rank+=(cur_node->get_left())->get_key_value()+1;
+			return rank;
+		}
+		else if(seek_value>cur_node->get_key_value())
+		{
+			rank+=(cur_node->get_left())->get_key_value()+1;
+		}
+		else
+		{
+			cur_node=cur_node->get_left();
+		}
+	}
+	return 0;
+}
 //tree[3n-2]:color,tree[3n-1]:key_value,tree[3n]:Dynamic Order Statistics
 void Insert(int * tree, int key)
 {
@@ -599,8 +643,9 @@ void Insert(int * tree, int key)
 			if(tree[3*i-1] == 0)
 				continue;
 			else if(tree[3*i-1] == -1)
-				break;
-			RBTree->node_insert(tree[3*i-2], tree[3*i-1]);
+				continue;
+			RBTree->node_insert(tree[3 * i - 2], tree[3 * i - 1]);
+			//RBTree->node_insert(tree[3 * i - 1]);
 		}
 		RBTree->node_insert(key);
 	}
@@ -659,7 +704,27 @@ int Select(int * tree, int i) {
 
 int Rank(int * tree, int x) {
 	// use Dynamic Order Statistics to return the rank of element x in the tree
+	int rank=0;
+	int seek_value = x;
+	int arr_size = tree[0];
+	RB_tree* RBTree = 0;
+	RBTree = new RB_tree;
+	int node_size = (tree[0]-1)/3;
+	if (RBTree->empty_tree() && tree[1]==-1)
+	{
 
-
-	return -1;
+	}
+	else
+	{
+		for(int i = 1;i<=node_size;i++)
+		{
+			if (tree[3 * i - 1] == 0)
+				continue;
+			else if (tree[3 * i - 1] == -1)
+				continue;
+			RBTree->node_insert(tree[3 * i - 2], tree[3 * i - 1]);
+		}
+	}
+	RBTree->compute_rank(x);
+	return rank;
 }
