@@ -158,8 +158,8 @@ public:
 	void left_rotation(node* z);
 	void right_rotation(node* z);
 	node* left_maximum(node* z);
-	void node_insert(int data, int size);
-	void node_insert(int data, int color, int size);
+	void node_insert(int data);
+	void node_insert(int data, int color);
 	void node_delete(int data);
 	void property_fixup(node* z);
 	void deletion_fixup(node* z);
@@ -183,7 +183,13 @@ node* RB_tree::get_root(void) const
 }
 void RB_tree::left_rotation(node* z)
 {
+	int size_of_z = -2;
+	int size_of_tem_z_right_right = -2;
 	node* temp_z_right = z->get_right();
+
+	size_of_z = z->get_size();
+	size_of_tem_z_right_right = (temp_z_right->get_right())->get_size();
+
 	z->modify_right(temp_z_right->get_left());
 	if(temp_z_right->get_left()!=this->nil)
 	{
@@ -202,12 +208,35 @@ void RB_tree::left_rotation(node* z)
 	{
 		(z->get_parent())->modify_right(temp_z_right);
 	}
+
+	if(temp_z_right!=this->nil)
+	{
+		temp_z_right->modify_size(size_of_z);
+	}
+	else
+	{
+		temp_z_right->modify_size(0);
+	}
+	if(z!=this->nil)
+	{
+		z->modify_size(size_of_z - size_of_tem_z_right_right - 1);
+	}
+	else
+	{
+		z->modify_size(0);
+	}
 	temp_z_right->modify_left(z);
 	z->modify_parent(temp_z_right);
 }
 void RB_tree::right_rotation(node* z)
 {
+	int size_of_z = -2;
+	int size_of_tmp_z_left_left = -2;
 	node* temp_z_left = z->get_left();
+
+	size_of_z = z->get_size();
+	size_of_tmp_z_left_left = (temp_z_left->get_left())->get_size();
+
 	z->modify_left(temp_z_left->get_right());
 	if(temp_z_left->get_right()!=this->nil)
 	{
@@ -226,6 +255,23 @@ void RB_tree::right_rotation(node* z)
 	{
 		(z->get_parent())->modify_right(temp_z_left);
 	}
+
+	if(temp_z_left!=this->nil)
+	{
+		temp_z_left->modify_size(size_of_z);
+	}
+	else
+	{
+		temp_z_left->modify_size(0);
+	}
+	if(z!=this->nil)
+	{
+		z->modify_size(size_of_z - size_of_tmp_z_left_left -1);
+	}
+	else
+	{
+		z->modify_size(0);
+	}
 	temp_z_left->modify_right(z);
 	z->modify_parent(temp_z_left);
 }
@@ -238,11 +284,11 @@ node* RB_tree::left_maximum(node* z)
 	return z;
 }
 
-void RB_tree::node_insert(int data,int size)
+void RB_tree::node_insert(int data)
 {//For newly inserted node in a RBtree
 	node* parent_curnode = this->nil;
 	node* current_node = this->root;
-	node* new_node = new node(data,size);
+	node* new_node = new node(data,1);
 	while(current_node!=this->nil)
 	{
 		parent_curnode = current_node;
@@ -272,11 +318,11 @@ void RB_tree::node_insert(int data,int size)
 	new_node->initialize_property(this->nil);
 	property_fixup(new_node);
 }
-void RB_tree::node_insert(int color, int data, int size)
+void RB_tree::node_insert(int color, int data)
 {
 	node* parent_curnode = this->nil;
 	node* current_node = this->root;
-	node* new_node = new node(data,color,size);
+	node* new_node = new node(data,color,1);
 	while(current_node!=this->nil)
 	{
 		parent_curnode = current_node;
@@ -311,25 +357,34 @@ void RB_tree::node_insert(int color, int data, int size)
 }
 void RB_tree::node_delete(int data)
 {
+	node* parent_of_deleted = 0;
 	node* real_deleted_node=0;
 	node* child_of_RDN=0;
 	node* delete_node = this->root;
 	while(delete_node!=this->nil && delete_node->get_key_value()!=data)
 	{
-		if(delete_node->get_key_value()<data)
+		parent_of_deleted = delete_node;
+		if(delete_node->get_key_value()>data)
 		{
+			delete_node->modify_size((delete_node->get_size())-1);
 			delete_node = delete_node->get_left();
 		}
-		else if(delete_node->get_key_value()>data)
+		else if(delete_node->get_key_value()<data)
 		{
+			delete_node->modify_size((delete_node->get_size())-1);
 			delete_node = delete_node->get_right();
 		}
 	}
 	if(delete_node==this->nil)
 	{
+		while(parent_of_deleted!=this->nil)
+		{
+			parent_of_deleted->modify_size((parent_of_deleted->get_size())+1);
+			parent_of_deleted = (parent_of_deleted->get_parent());
+		}
 		return;
 	}
-	if (delete_node->get_left() == NULL || delete_node->get_right() == NULL)
+	if (delete_node->get_left() == this->nil || delete_node->get_right() == this->nil)
 	{
 		real_deleted_node = delete_node;
 	}
@@ -363,14 +418,19 @@ void RB_tree::node_delete(int data)
 
 	if(real_deleted_node!=delete_node)
 	{
-		delete_node->modify_color(real_deleted_node->get_color());
-		//delete_node->modify_key_value(real_deleted_node->get_key_value());
+		//delete_node->modify_color(real_deleted_node->get_color());
+		delete_node->modify_key_value(real_deleted_node->get_key_value());
 	}
-	delete real_deleted_node;
 	if(real_deleted_node->get_color()==BLACK)
 	{
+		delete real_deleted_node;
 		deletion_fixup(child_of_RDN);
 	}
+	else
+	{
+		delete real_deleted_node;
+	}
+	return;
 }
 void RB_tree::property_fixup(node* z)
 {
@@ -390,15 +450,18 @@ void RB_tree::property_fixup(node* z)
 				grandparent->modify_color(RED);
 				cur_deal_node = grandparent;
 			}
-			else if(cur_deal_node == (cur_deal_node->get_parent())->get_right())
-			{//cur_deal_node is a right child which need to be left rotated on its parent
-				cur_deal_node = cur_deal_node->get_parent();
-				this->left_rotation(cur_deal_node);
-				grandparent = (cur_deal_node->get_parent())->get_parent();//Since the cur_deal_node has been modified.
+			else
+			{
+				if (cur_deal_node == (cur_deal_node->get_parent())->get_right())
+				{//cur_deal_node is a right child which need to be left rotated on its parent
+					cur_deal_node = cur_deal_node->get_parent();
+					this->left_rotation(cur_deal_node);
+					grandparent = (cur_deal_node->get_parent())->get_parent();//Since the cur_deal_node has been modified.
+				}
+				(cur_deal_node->get_parent())->modify_color(BLACK);
+				grandparent->modify_color(RED);
+				this->right_rotation(grandparent);
 			}
-			(cur_deal_node->get_parent())->modify_color(BLACK);
-			grandparent->modify_color(RED);
-			this->right_rotation(grandparent);
 		}
 		else//parent is right child
 		{
@@ -410,15 +473,18 @@ void RB_tree::property_fixup(node* z)
 				grandparent->modify_color(RED);
 				cur_deal_node = grandparent;
 			}
-			else if(cur_deal_node == (cur_deal_node->get_parent())->get_left())
+			else
 			{
-				cur_deal_node = cur_deal_node->get_parent();
-				this->right_rotation(cur_deal_node);
-				grandparent = (cur_deal_node->get_parent())->get_parent();//Since the cur_deal_node has been modified.
+				if (cur_deal_node == (cur_deal_node->get_parent())->get_left())
+				{
+					cur_deal_node = cur_deal_node->get_parent();
+					this->right_rotation(cur_deal_node);
+					grandparent = (cur_deal_node->get_parent())->get_parent();//Since the cur_deal_node has been modified.
+				}
+				(cur_deal_node->get_parent())->modify_color(BLACK);
+				grandparent->modify_color(RED);
+				this->left_rotation(grandparent);
 			}
-			(cur_deal_node->get_parent())->modify_color(BLACK);
-			grandparent->modify_color(RED);
-			this->left_rotation(grandparent);
 		}
 	}
 	this->root->modify_color(BLACK);
@@ -515,7 +581,7 @@ void RB_tree::inorder_travel(int start_index, int* tree,const node* cur_deal_nod
 	inorder_travel(start_index*2+1, tree, (cur_deal_node)->get_right());
 	return;
 }
-//tree[3n-2]:color,tree[3n-2]:key_value,tree[3n]:Dynamic Order Statistics
+//tree[3n-2]:color,tree[3n-1]:key_value,tree[3n]:Dynamic Order Statistics
 void Insert(int * tree, int key)
 {
 	int arr_size = tree[0];
@@ -523,40 +589,6 @@ void Insert(int * tree, int key)
 	RBTree = new RB_tree;
 	int node_size = (tree[0]-1)/3;
 	if (RBTree->empty_tree() && tree[1]==-1)
-	{
-		RBTree->node_insert(0, key,1);
-	}
-	else
-	{
-		for(int i = 1;i<=node_size;i++)
-		{
-			if(tree[3*i-1] == 0)
-				continue;
-			else if(tree[3*i-1] == -1)
-				break;
-			RBTree->node_insert(tree[3*i-2], tree[3*i-1], tree[3*i]);
-		}
-		RBTree->node_insert(key,1);
-	}
-	/*------------------Write Back------------------------------------*/
-	memset(tree, -1, arr_size);
-	tree[0] = arr_size;
-	RBTree->inorder_travel(1, tree, RBTree->get_root());
-	/*int node_size = (tree[0]-1)/3;
-	for(int i=1;i<=node_size;i++)
-	{
-		RBTree->node_insert(tree[3*i-2],tree[3*i-1]);
-	}
-	RBTree->node_insert(key);*/
-}
-
-void Delete(int * tree, int key)
-{
-	int arr_size = tree[0];
-	RB_tree* RBTree = 0;
-	RBTree = new RB_tree;
-	int node_size = (tree[0]-1)/3;
-	if (RBTree->empty_tree())
 	{
 		RBTree->node_insert(0, key);
 	}
@@ -570,9 +602,49 @@ void Delete(int * tree, int key)
 				break;
 			RBTree->node_insert(tree[3*i-2], tree[3*i-1]);
 		}
+		RBTree->node_insert(key);
+	}
+	/*------------------Write Back------------------------------------*/
+	//memset(tree, -1, arr_size);
+	for (int i = 1; i < arr_size; i++)
+	{
+		tree[i] = -1;
+	}
+	RBTree->inorder_travel(1, tree, RBTree->get_root());
+	/*int node_size = (tree[0]-1)/3;
+	for(int i=1;i<=node_size;i++)
+	{
+		RBTree->node_insert(tree[3*i-2],tree[3*i-1]);
+	}
+	RBTree->node_insert(key);*/
+}
+//tree[3n-2]:color,tree[3n-2]:key_value,tree[3n]:Dynamic Order Statistics
+void Delete(int * tree, int key)
+{
+	int arr_size = tree[0];
+	RB_tree* RBTree = 0;
+	RBTree = new RB_tree;
+	int node_size = (tree[0]-1)/3;
+	if (RBTree->empty_tree() && tree[1]==-1)
+	{
+		RBTree->node_insert(0, key);
+	}
+	else
+	{
+		for(int i = 1;i<=node_size;i++)
+		{
+			if (tree[3 * i - 1] == 0)
+				continue;
+			else if (tree[3 * i - 1] == -1)
+				continue;
+			RBTree->node_insert(tree[3 * i - 2], tree[3 * i - 1]);
+		}
 	}
 	RBTree->node_delete(key);
-	memset(tree, -1, arr_size);
+	for (int i = 1; i < arr_size; i++)
+	{
+		tree[i] = -1;
+	}
 	tree[0] = arr_size;
 	/*------------------write back---------------------*/
 	RBTree->inorder_travel(1, tree, (RBTree->get_root()));
