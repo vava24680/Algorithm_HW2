@@ -160,7 +160,7 @@ public:
 	node* search(const int key_value) const;
 	node* left_maximum(node* z) const;
 	void node_insert(int data) ;
-	void node_insert(int data, int color);
+	//void node_insert(int data, int color);
 	void node_delete(int data);
 	void property_fixup(node* z);
 	void deletion_fixup(node* z);
@@ -338,7 +338,7 @@ void RB_tree::node_insert(int data)
 	new_node->initialize_property(this->nil);
 	property_fixup(new_node);
 }
-void RB_tree::node_insert(int color, int data)
+/*void RB_tree::node_insert(int color, int data)
 {
 	node* parent_curnode = this->nil;
 	node* current_node = this->root;
@@ -374,7 +374,7 @@ void RB_tree::node_insert(int color, int data)
 	new_node->modify_right(this->nil);
 	new_node->initialize_property(this->nil);
 	property_fixup(new_node);
-}
+}*/
 void RB_tree::node_delete(int data)
 {
 	node* parent_of_deleted = 0;
@@ -644,7 +644,7 @@ void Insert(int * tree, int key)
 				continue;
 			else if(tree[3*i-1] == -1)
 				continue;
-			RBTree->node_insert(tree[3 * i - 2], tree[3 * i - 1]);
+			//RBTree->node_insert(tree[3 * i - 2], tree[3 * i - 1]);
 			//RBTree->node_insert(tree[3 * i - 1]);
 		}
 		RBTree->node_insert(key);
@@ -682,7 +682,7 @@ void Delete(int * tree, int key)
 				continue;
 			else if (tree[3 * i - 1] == -1)
 				continue;
-			RBTree->node_insert(tree[3 * i - 2], tree[3 * i - 1]);
+			//RBTree->node_insert(tree[3 * i - 2], tree[3 * i - 1]);
 		}
 	}
 	RBTree->node_delete(key);
@@ -722,7 +722,7 @@ int Rank(int * tree, int x) {
 				continue;
 			else if (tree[3 * i - 1] == -1)
 				continue;
-			RBTree->node_insert(tree[3 * i - 2], tree[3 * i - 1]);
+			//RBTree->node_insert(tree[3 * i - 2], tree[3 * i - 1]);
 		}
 	}
 	RBTree->compute_rank(x);
