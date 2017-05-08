@@ -344,6 +344,7 @@ void RB_tree::node_insert(int data)
 	new_node->initialize_property(this->nil);
 	property_fixup(new_node);
 }
+/*For node which is already in RBTree*/
 void RB_tree::node_insert(int color, int data, int order)
 {
 	int current_node_index = 1;
