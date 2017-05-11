@@ -28,16 +28,18 @@ int main(void)
 	Insert(tree, 6);
 	Insert(tree, 7);
 	Insert(tree, 10);
-	for (int i = 1; i <= 188; i = i + 3)
+	for (int i = 1,j=1; i <= 188; i = i + 3,j++)
 	{
-		cout << "(" << tree[i] << ", " << tree[i + 1] << ", " << tree[i + 2] << ")" << endl;
+		cout << "(" << j << ", " << tree[i] << ", " << tree[i + 1] << ", " << tree[i + 2] << ")" << endl;
 	}
 	cout << "Insertion Done" << endl;
-	/*Delete(tree, 4);
-	for (int i = 1; i <= 90; i = i + 3)
+	Delete(tree, 4);
+	Delete(tree, 9);
+	Delete(tree, 6);
+	for (int i = 1,j=1; i <= 188; i = i + 3,j++)
 	{
-		cout << "(" << tree[i] << ", " << tree[i + 1] << ", " << tree[i + 2] << ")" << endl;
-	}*/
+		cout << "(" << j << ", " << tree[i] << ", " << tree[i + 1] << ", " << tree[i + 2] << ")" << endl;
+	}
 	//cout << "What you want to delete :";
 	//cin >> delete_num;
 	/*while (delete_num >= 0)
@@ -45,6 +47,6 @@ int main(void)
 		Delete(tree ,delete_num);
 	}
 	*/
-	//system("pause");
+	system("pause");
 	return 0;
 }

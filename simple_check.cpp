@@ -48,15 +48,21 @@ int main(int argc, char **argv) {
 		expect_insert_nodes[index] = NIL;
 	}
 	
+	test_node x1{0, 6, 3};
+	test_node x2{1, 5, 1};
+	test_node x3{1, 7, 1};
+	mark_node m1{1, x1};
+	mark_node m2{2, x2};
+	mark_node m3{3, x3};
 	std::vector<mark_node> expect_insert_tree{
 		//
 		// set red black tree nodes
 		//
 		// {place, data of the node}
 		//
-		{ 1 ,{ 0, 6, 3 } },
-		{ 2 ,{ 1, 5, 1 } },
-		{ 3 ,{ 1, 7, 1 } },
+		m1,
+		m2,
+		m3,
 	};
 	for (auto tree_node : expect_insert_tree) {
 		expect_insert_nodes[std::get<0>(tree_node)] = std::get<1>(tree_node);
@@ -92,14 +98,21 @@ int main(int argc, char **argv) {
 		expect_delete_nodes[index] = NIL;
 	}
 
+	test_node y1{0,6 ,1};
+	mark_node n1{1,y1};
+
 	std::vector<mark_node> expect_delete_tree{
 		//
 		// set red black tree nodes
 		//
 		// {place, data of the node}
 		//
-		{ 1 ,{ 0, 6, 1 } },
+		n1
 	};
+
+
+
+
 	for (auto tree_node : expect_delete_tree) {
 		expect_delete_nodes[std::get<0>(tree_node)] = std::get<1>(tree_node);
 	}
