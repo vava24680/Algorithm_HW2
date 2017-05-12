@@ -148,7 +148,9 @@ void node::modify_size(int size)
 	this->size = size;
 }
 node::~node()
-{}
+{
+
+}
 /*---------------------------------------------------------*/
 class RB_tree
 {
@@ -168,7 +170,8 @@ public:
 	void inorder_travel(int start_index, int* tree,const node* cur_deal_node);
 	int compute_rank(int seek_value);
 	int compute_select(int seek_rank);
-	bool empty_tree();
+	bool empty_tree() const;
+	~RB_tree();
 private:
 	int* tree;
 	node* nil;
@@ -179,8 +182,12 @@ RB_tree::RB_tree()
 {
 	tree = 0;
 	nil = new node(-111,0,true);
-	//root = nil;
 	root = nil;
+}
+
+RB_tree::~RB_tree()
+{
+	delete this->nil;
 }
 
 node* RB_tree::get_root(void) const
@@ -642,7 +649,7 @@ void RB_tree::deletion_fixup(node* z)
 	}
 	cur_deal_node->modify_color(BLACK);//Restore property 4(two consecutive red are not allowed)
 }
-bool RB_tree::empty_tree()
+bool RB_tree::empty_tree() const
 {
 	return (this->root==this->nil) ? true : false;
 }
@@ -661,6 +668,7 @@ void RB_tree::inorder_travel(int start_index, int* tree,const node* cur_deal_nod
 	tree[3*start_index] = cur_deal_node->get_size();
 	inorder_travel(start_index*2, tree, (cur_deal_node)->get_left());
 	inorder_travel(start_index*2+1, tree, (cur_deal_node)->get_right());
+	delete cur_deal_node;
 	return;
 }
 int RB_tree::compute_rank(int seek_value)
@@ -688,17 +696,30 @@ int RB_tree::compute_rank(int seek_value)
 	return 0;
 }
 //tree[3n-2]:color,tree[3n-1]:key_value,tree[3n]:Dynamic Order Statistics
-/*int RB_tree::compute_select(int seek_order)
+int RB_tree::compute_select(int input_order)
 {
+	int seek_order = input_order;
 	node* cur_node = this->root;
+	int order_cur_node = (cur_node->get_left())->get_size() + 1;
 	int value = 0;
 	if(cur_node == this->nil)
 		return value;
-	while(cur_node!=this->nil)
+	while (seek_order != order_cur_node)
 	{
-		if()
+		if (seek_order < order_cur_node)
+		{
+			cur_node = cur_node->get_left();
+			order_cur_node = (cur_node->get_left())->get_size() + 1;
+		}
+		else
+		{
+			cur_node = cur_node->get_right();
+			seek_order = seek_order - order_cur_node;
+			order_cur_node = (cur_node->get_left())->get_size() + 1;
+		}
 	}
-}*/
+	return cur_node->get_key_value();
+}
 void Insert(int * tree, int key)
 {
 	int arr_size = tree[0];
@@ -728,6 +749,7 @@ void Insert(int * tree, int key)
 		tree[i] = -1;
 	}
 	RBTree->inorder_travel(1, tree, RBTree->get_root());
+	delete RBTree;
 }
 //tree[3n-2]:color,tree[3n-2]:key_value,tree[3n]:Dynamic Order Statistics
 void Delete(int * tree, int key)
@@ -759,10 +781,17 @@ void Delete(int * tree, int key)
 	tree[0] = arr_size;
 	/*------------------write back---------------------*/
 	RBTree->inorder_travel(1, tree, (RBTree->get_root()));
+	delete RBTree;
 }
 
-int Select(int * tree, int i) {
+int Select(int * tree, int i)
+{
 	// use Dynamic Order Statistics to return the i'th smallest element
+	int* temp_arr;
+	temp_arr = new int[tree[0]];
+	memcpy(temp_arr, tree, tree[0]);
+
+	
 	RB_tree* RBTree = 0;
 	RBTree = new RB_tree;
 	int node_size = (tree[0]-1)/3;
@@ -782,11 +811,16 @@ int Select(int * tree, int i) {
 		}
 	}
 
+	RBTree->inorder_travel(1, temp_arr, RBTree->get_root());
+	delete RBTree;
 	return -1;
 }
 
 int Rank(int * tree, int x) {
 	// use Dynamic Order Statistics to return the rank of element x in the tree
+	int* temp_arr = 0;
+	temp_arr = new int[tree[0]];
+	memcpy(temp_arr, tree, tree[0]);
 	int rank=0;
 	int seek_value = x;
 	RB_tree* RBTree = 0;
@@ -808,5 +842,7 @@ int Rank(int * tree, int x) {
 		}
 	}
 	rank = RBTree->compute_rank(x);
+	RBTree->inorder_travel(1, temp_arr, RBTree->get_root());
+	delete RBTree;
 	return rank;
 }
