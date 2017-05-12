@@ -72,15 +72,15 @@ TEST(AlgoHW2,Delete_Advance) {
 }
 
 
-TEST(AlgoHW2,Rank) {
+/*TEST(AlgoHW2,Rank) {
 	EXPECT_EQ(18.0, Rank(insert_tree.data(), 3));
 	EXPECT_EQ(18.0, Rank(delete_tree.data(), 3));
-}
+}*/
 
-TEST(AlgoHW2,Select) {
+/*TEST(AlgoHW2,Select) {
 	EXPECT_EQ(18.0, Rank(insert_tree.data(), 3));
 	EXPECT_EQ(18.0, Select(delete_tree.data(),3));
-}
+}*/
 
 
 #endif
@@ -107,20 +107,20 @@ int main(int argc, char **argv) {
 		//
 		// {place, data of the node}
 		//
-		{ 1 ,{ 0, 5,14 } },
-		{ 2 ,{ 0, 2, 3 } },
-		{ 3 ,{ 0,30,10 } },
-		{ 4 ,{ 0, 1, 1 } },
-		{ 5 ,{ 0, 3, 1 } },
-		{ 6 ,{ 1,26, 4 } },
-		{ 7 ,{ 1,41, 5 } },
-		{ 12 ,{ 0,24, 1 } },
-		{ 13 ,{ 0,28, 2 } },
-		{ 14 ,{ 0,38, 3 } },
-		{ 15 ,{ 0,47, 1 } },
-		{ 27 ,{ 1,29, 1 } },
-		{ 28 ,{ 1,35, 1 } },
-		{ 29 ,{ 1,39, 1 } },
+		mark_node( 1 ,{ 0, 5,14 } ),
+		mark_node( 2 ,{ 0, 2, 3 } ),
+		mark_node( 3, { 0, 30, 10 } ),
+		mark_node( 4, { 0, 1, 1 } ),
+		mark_node( 5, { 0, 3, 1 } ),
+		mark_node( 6, { 1, 26, 4 } ),
+		mark_node( 7, { 1, 41, 5 } ),
+		mark_node( 12, { 0, 24, 1 } ),
+		mark_node( 13, { 0, 28, 2 } ),
+		mark_node( 14, { 0, 38, 3 } ),
+		mark_node( 15, { 0, 47, 1 } ),
+		mark_node( 27, { 1, 29, 1 } ),
+		mark_node( 28, { 1, 35, 1 } ),
+		mark_node( 29, { 1, 39, 1 } ),
 	};
 
 	for (auto tree_node : input_tree_nodes) {
