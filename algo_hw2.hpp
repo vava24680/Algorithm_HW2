@@ -4,6 +4,7 @@
 // change this to your id
 static const char* student_id = "0416005";
 
+int ohohoh = 5;
 #define RED 1
 #define BLACK 0
 // do not edit prototype

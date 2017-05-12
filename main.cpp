@@ -72,15 +72,14 @@ TEST(AlgoHW2,Delete_Advance) {
 }
 
 
-/*TEST(AlgoHW2,Rank) {
+TEST(AlgoHW2,Rank) {
 	EXPECT_EQ(18.0, Rank(insert_tree.data(), 3));
 	EXPECT_EQ(18.0, Rank(delete_tree.data(), 3));
-}*/
-
-/*TEST(AlgoHW2,Select) {
+}
+TEST(AlgoHW2,Select) {
 	EXPECT_EQ(18.0, Rank(insert_tree.data(), 3));
 	EXPECT_EQ(18.0, Select(delete_tree.data(),3));
-}*/
+}
 
 
 #endif
